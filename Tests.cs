@@ -45,7 +45,7 @@ public class ProductTest
         Product.HowMuchProduct("Myszka");
 
         var output = writer.ToString();
-        Assert.Contains("Produkt o nazwie: Myszka kupiono 1 raz i jest to 100 % wszystkich produktów", output);
+        Assert.Contains("Produkt o nazwie: Myszka kupiono 1 raz i jest to 100% wszystkich produktów", output);
     }
 }
 
