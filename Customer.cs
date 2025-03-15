@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-class Customer
+﻿class Customer
 {
-    public int CustomerId { get; private set; }
+    public int CustomerId { get; set; }
     public string KlientType { get; private set; }
     public string Address { get; private set; }
     private static int nextCustomer = 0;
@@ -18,7 +12,6 @@ class Customer
         this.Address = address;
         allCustomers.Add(this);
     }
-
     public static void SeeCustomerOrders(int id)
     {
         Customer foundCustomer = allCustomers.Find(c => c.CustomerId == id);
@@ -65,7 +58,7 @@ class Customer
             {
                 foundCustomer.KlientType = "osoba fizyczna";
             }
-            Console.WriteLine($"Id klienta: {id}, Klient: {foundCustomer.KlientType}," +
+            Console.WriteLine($"Id klienta: {id}, klient: {foundCustomer.KlientType}," +
             $" Adres: {foundCustomer.Address}");
 
             SeeCustomerOrders(id);

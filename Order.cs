@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-enum OrderStatus
+﻿enum OrderStatus
 {
     Nowe,
     WMagazynie,
@@ -24,7 +18,6 @@ class Order
 
     private static List<Order> orders = new List<Order>();
     public OrderStatus Status { get; private set; }
-
     public Order(int amount, string paymentMethod, Customer customer, Product product)
     {
         Amount = amount;
@@ -32,7 +25,6 @@ class Order
         this.customer = customer;
         this.product = product;
     }
-
     public void MakeOrder()
     {
         orders.Add(this);
@@ -111,8 +103,6 @@ class Order
             Console.WriteLine("Brak zamówień");
             return;
         }
-
-
         string paymentMethod;
         foreach (Order order in orders)
         {
@@ -126,11 +116,6 @@ class Order
             }
             Console.WriteLine($"ID: {order.Id}, Nazwa: {order.product.Name}, Kwota: {order.Amount}, Status: {order.Status}, Sposób płatności: {paymentMethod}, Data i czas złożonego zamówienia: {order.TimeOrder}");
         }
-        
-    }
-    public static Order FindOrderById(int id)
-    {
-        return orders.Find(o => o.Id == id);
     }
 }
 
