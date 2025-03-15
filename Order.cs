@@ -9,44 +9,58 @@ enum OrderStatus
     Nowe,
     WMagazynie,
     Wysylka,
-    Zwrocone,
+    ZwroconoDoKlienta,
     Blad,
     Zamkniete
 }
 class Order
 {
-    private int Id { get; set; }
     private int Amount { get; set; }
-    private string Nazwa { get; set; }
-    private string KlientType { get; set; }
-    private string Adres { get; set; }
     private string PaymentMethod { get; set; }
+    private int Id { get; set; }
     private DateTime TimeOrder { get; set; }
+    private Customer customer { get; set; }
+    public Product product { get; set; }
 
     private static List<Order> orders = new List<Order>();
+    public OrderStatus Status { get; private set; }
 
-    private static int nextOrder = 0;
-    private OrderStatus Status { get; set; }
-
-    public Order(string nazwa, int amount, string klientType, string adres, string paymentMethod)
-    { 
-        this.Amount = amount;
-        this.Nazwa = nazwa;
-        this.KlientType = klientType;
-        this.PaymentMethod = paymentMethod;
-        this.Adres = adres;
-        this.Id = nextOrder++;
-        this.TimeOrder = DateTime.Now;
+    public Order(int amount, string paymentMethod, Customer customer, Product product)
+    {
+        Amount = amount;
+        PaymentMethod = paymentMethod;
+        this.customer = customer;
+        this.product = product;
     }
 
     public void MakeOrder()
     {
         orders.Add(this);
+        Product.AddProduct(product);
+        customer.AddCustomerOrder(this);
         orders[Id].Status = OrderStatus.Nowe;
-
         Console.WriteLine($"Zamówienie nr: {this.Id} zostało utworzone.");
-        Console.WriteLine($"Nazwa: {this.Nazwa}, Ilość: {this.Amount}, Klient: {this.KlientType}," +
-            $" Adres: {this.Adres}, Sposób płatności: {this.PaymentMethod}");
+        string klientType;
+        string paymentMethod;
+
+        if (this.customer.KlientType == "F")
+        {
+            klientType = "firma";
+        }
+        else
+        {
+            klientType = "osoba fizyczna";
+        }
+        if(this.PaymentMethod == "K")
+        {
+            paymentMethod = "karta";
+        }
+        else
+        {
+            paymentMethod = "gotówka";
+        }
+        Console.WriteLine($"Nazwa: {this.product.Name}, kwota: {this.Amount}, klient: {klientType}," +
+            $" adres: {this.customer.Address}, sposób płatności: {paymentMethod}");
     }
     public static void MoveOrderToMagazine(int id)
     {
@@ -56,29 +70,39 @@ class Order
             Console.WriteLine("Nie znaleziono zamówienia o taim ID.");
             return;
         }
-        if (string.IsNullOrEmpty(order.Adres))
+        if (string.IsNullOrEmpty(order.customer.Address))
         {
             order.Status = OrderStatus.Blad;
             Console.WriteLine($"Zamówienie nr {order.Id} zakończyło się błędem (brak adresu dostawy)");
             return;
         }
-
-        if(order.Amount < 2500 && order.PaymentMethod == "G")
+        if (order.Amount < 2500 && order.PaymentMethod == "G")
         {
-            order.Status = OrderStatus.Zwrocone;
-            Console.WriteLine($"Zamówienie nr: {order.Id} zostało przeniesione do wysyłki. Status zmieni się po 5 sekundach.");
+            order.Status = OrderStatus.ZwroconoDoKlienta;
+            Console.WriteLine($"Zamówienie nr: {order.Id} zostało zwrócone do klienta.");
             return;
         }
-        order.Status = OrderStatus.Wysylka;
-
-        Thread.Sleep(5000);
-        order.Status = OrderStatus.Zamkniete;
-        Console.WriteLine($"Zamówienie nr {order.Id} zostało wysłane.");
+        order.Status = OrderStatus.WMagazynie;
     }
     public static void MoveOrderToShipment(int id)
     {
-        Console.SetCursorPosition(2, 2);
-        orders[id].Status = OrderStatus.Wysylka;
+        var order = orders.FirstOrDefault(o => o.Id == id);
+        if(order == null)
+        {
+            Console.WriteLine("Zamówienie o tym numerze ID nie istnieje");
+            return;
+        }
+        if(order.Status != OrderStatus.WMagazynie)
+        {
+            Console.WriteLine("Zamówienie o tym numerze ID nie istnieje");
+            return;
+        }
+
+        order.Status = OrderStatus.Wysylka;
+        Console.WriteLine($"Zamówienie nr {order.Id} zostało wysłane. Poczekaj na potwierdzenie...");
+        Thread.Sleep(4000);
+        order.Status = OrderStatus.Zamkniete;
+        Console.WriteLine($"Zamówienie nr {order.Id} zostało dostarczone.");
     }
     public static void SeeOrders()
     {
@@ -88,27 +112,25 @@ class Order
             return;
         }
 
-        foreach(Order order in orders)
+
+        string paymentMethod;
+        foreach (Order order in orders)
         {
-            Console.WriteLine($"ID: {order.Id}, Nazwa: {order.Nazwa}, Ilość: {order.Amount}, Status: {order.Status}, Sposób płatności: {order.PaymentMethod}, Data i czas złożonego zamówienia: {order.TimeOrder}");
+            if (order.PaymentMethod == "K")
+            {
+                paymentMethod = "karta";
+            }
+            else
+            {
+                paymentMethod = "gotówka";
+            }
+            Console.WriteLine($"ID: {order.Id}, Nazwa: {order.product.Name}, Kwota: {order.Amount}, Status: {order.Status}, Sposób płatności: {paymentMethod}, Data i czas złożonego zamówienia: {order.TimeOrder}");
         }
         
     }
-    public static void SeeOrdersByTime(DateTime startDate, DateTime endDate)
+    public static Order FindOrderById(int id)
     {
-        var filteredOrders = orders.Where(order => order.TimeOrder >= startDate && order.TimeOrder <= endDate)
-                                           .OrderByDescending(order => order.TimeOrder)
-                                           .ToList();
-
-        foreach (Order order in filteredOrders)
-        {
-            Console.WriteLine($"ID: {order.Id}, Nazwa: {order.Nazwa}, Ilość: {order.Amount}, Status: {order.Status}, Sposób płatności: {order.PaymentMethod}, Data: {order.TimeOrder}");
-        }
-
-        if(filteredOrders.Count == 0)
-        {
-            Console.WriteLine("Brak zamówień w podanym przedziale czasowym");
-        }
+        return orders.Find(o => o.Id == id);
     }
 }
 
