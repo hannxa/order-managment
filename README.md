@@ -35,5 +35,5 @@ Once the program starts, you will be presented with a menu. The options availabl
 4. After order creation, you can move the order to the warehouse, shipment, or just view it.
 5. The program allows viewing the order list, customer details, or checking the stock quantity.
 ## Error Handling
-The program provides basic error handling for user input, ensuring that invalid data (like incorrect order IDs, empty inputs, etc.) does not crash the system.
+The program provides basic error handling for user input, ensuring that invalid data (like incorrect order IDs, empty inputs, etc.) does not crash the system and also includes units tests
 
